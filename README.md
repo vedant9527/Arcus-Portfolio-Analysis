@@ -1,88 +1,69 @@
-# Arcus — Portfolio Analytics Platform
+# Arcus — AI Portfolio Analytics Platform
 
-**Institutional-grade portfolio analytics.** Sharpe ratios. VaR. Monte Carlo. In seconds.
+Institutional-grade portfolio risk analytics for retail investors. Ask questions about your portfolio in natural language and get quantitative answers in seconds.
 
-🌐 **Live Demo:** [shreyas1504.github.io/Arcus](https://shreyas1504.github.io/Arcus/)
+🌐 **Live:** [arcus-insights.com](https://arcus-insights.com)
 
 ---
 
 ## What It Does
 
-Arcus gives retail investors the same risk analytics that hedge funds use — without the complexity. Pick your stocks, set a date range, and get a full quantitative breakdown with plain-English interpretations.
+Retail investors don't have access to the risk analytics tools institutional investors use. Arcus closes that gap.
 
-| Feature | What It Tells You |
+Describe your portfolio, ask a question, and get a full quantitative breakdown with plain-English interpretations — no Bloomberg terminal required.
+
+| Analysis | What You Get |
 |---|---|
-| **Health Score (0–100)** | One number summarising portfolio quality. Green (>70) = healthy. |
-| **Sharpe / Sortino Ratio** | Risk-adjusted return — are you being rewarded for the risk you're taking? |
-| **Beta vs S&P 500** | How much your portfolio amplifies market swings. |
-| **Value at Risk (95%)** | Worst expected daily loss on a bad day. |
-| **Max Drawdown** | Deepest peak-to-trough loss — the gut-check number. |
-| **Monte Carlo Simulation** | 300+ simulated future paths using Geometric Brownian Motion. |
-| **Efficient Frontier** | Random portfolios plotted on a risk-return map with your current vs optimal allocation. |
-| **Stress Testing** | Estimated losses under 2008 Crisis, COVID Crash, Dot-Com Bust, and custom scenarios. |
-| **AI Chat (Arcus AI)** | Ask questions about your portfolio in natural language. |
-| **Sector Analysis** | GICS sector breakdown with concentration warnings. |
-| **Correlation Heatmap** | Pairwise stock correlations — are your holdings truly diversified? |
+| **Health Score (0–100)** | One number summarising portfolio quality |
+| **Sharpe / Sortino Ratio** | Risk-adjusted return — are you rewarded for the risk you're taking? |
+| **Beta vs S&P 500** | How much your portfolio amplifies market moves |
+| **Value at Risk (95% / 99%)** | Worst expected daily loss under normal and tail conditions |
+| **Max Drawdown** | Deepest peak-to-trough loss in your history |
+| **Monte Carlo Simulation** | 300+ simulated future paths via Geometric Brownian Motion |
+| **Efficient Frontier** | Your current vs optimal allocation on a risk-return map |
+| **Stress Testing** | Estimated losses under 2008 Crisis, COVID Crash, Dot-Com Bust, custom scenarios |
+| **Sector Analysis** | GICS sector breakdown with concentration warnings |
+| **Correlation Heatmap** | Pairwise correlations — are your holdings actually diversified? |
+| **AI Chat (Arcus AI)** | Ask anything about your portfolio in natural language |
+
+---
+
+## Architecture
+
+The AI layer is built on the Anthropic API. A natural language query enters a classification layer, routes to the appropriate analysis module, retrieves live market data via yfinance, runs the calculation, and returns a grounded plain-language response.
+
+```
+User query
+    └── LLM classification (20 categories)
+            └── Analysis agent (metrics / monte carlo / optimizer / stress test / chat)
+                    └── Data pipeline (yfinance → NumPy / Pandas / SciPy)
+                            └── FastAPI response → Next.js frontend
+```
 
 ---
 
 ## Tech Stack
 
-### Backend
-| Tool | Purpose |
-|---|---|
-| **FastAPI** | REST API with automatic OpenAPI docs |
-| **Python 3.11+** | Core analytics engine |
-| **NumPy / Pandas** | Numerical computation and data manipulation |
-| **SciPy** | Portfolio optimisation (SLSQP constrained minimiser) |
-| **yfinance** | Historical price data from Yahoo Finance |
-| **Recharts / Framer** | Dynamic, interactive simulation charting |
+**Backend**
+- FastAPI — REST API with OpenAPI docs
+- Python 3.11+ — Core analytics engine
+- NumPy / Pandas — Numerical computation and data manipulation
+- SciPy — Portfolio optimisation (SLSQP constrained minimiser)
+- yfinance — Historical price data
+- Anthropic API — LLM classification and AI chat
 
-### Frontend
-| Tool | Purpose |
-|---|---|
-| **React 18 + TypeScript** | Component-based UI |
-| **Vite** | Lightning-fast build tooling |
-| **Tailwind CSS** | Utility-first styling with dark theme |
-| **Framer Motion** | Smooth animations and transitions |
-| **Recharts** | Interactive financial charts |
-| **Shadcn/ui** | Accessible component library |
+**Frontend**
+- React 18 + TypeScript
+- Vite — Build tooling
+- Tailwind CSS — Utility-first styling
+- Framer Motion — Animations
+- Recharts — Interactive financial charts
+- Shadcn/ui — Component library
 
----
-
-## Getting Started
-
-### Prerequisites
-- Python 3.11+
-- Node.js 18+
-- npm
-
-### 1. Clone
-
-```bash
-git clone https://github.com/shreyas1504/Arcus.git
-cd Arcus
-```
-
-### 2. Backend Setup
-
-```bash
-pip install -r backend/requirements.txt
-uvicorn backend.main:app --reload --port 8000
-```
-
-### 3. Frontend Setup
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-### 4. Open
-
-- **Frontend:** [http://localhost:8080](http://localhost:8080)
-- **API Docs:** [http://localhost:8000/docs](http://localhost:8000/docs)
+**Infrastructure**
+- FastAPI backend deployed on Render
+- Frontend deployed on Vercel
+- CI/CD via GitHub Actions
 
 ---
 
@@ -91,31 +72,52 @@ npm run dev
 ```
 Arcus/
 ├── backend/
-│   ├── main.py                 # FastAPI app entry point
-│   ├── config.py               # Constants and demo portfolios
+│   ├── main.py                  # FastAPI entry point
+│   ├── config.py                # Constants and demo portfolios
 │   ├── analytics/
-│   │   └── metrics.py          # All risk calculations + interpretations
+│   │   └── metrics.py           # Risk calculations and interpretations
 │   ├── data/
-│   │   └── fetcher.py          # yfinance data fetching + caching
+│   │   └── fetcher.py           # yfinance data fetching and caching
 │   ├── models/
-│   │   ├── monte_carlo.py      # GBM simulation engine
-│   │   └── optimizer.py        # Sharpe maximisation solver
+│   │   ├── monte_carlo.py       # GBM simulation engine
+│   │   └── optimizer.py         # Sharpe maximisation solver
 │   └── routers/
-│       ├── portfolio.py        # /api/portfolio/* endpoints
-│       ├── chat.py             # AI chatbot endpoint
-│       ├── news.py             # Live market news feed
-│       └── adapter.py          # /api/v2/* adapter layer
+│       ├── portfolio.py         # /api/portfolio/* endpoints
+│       ├── chat.py              # AI chat endpoint
+│       ├── news.py              # Live market news feed
+│       └── adapter.py           # /api/v2/* adapter layer
 ├── frontend/
 │   ├── src/
-│   │   ├── pages/              # Index, Onboarding, Dashboard, Results, Chat
-│   │   ├── components/         # Reusable UI components + charts
-│   │   └── lib/                # API client, utilities
-│   ├── vite.config.ts
+│   │   ├── pages/               # Onboarding, Dashboard, Results, Chat
+│   │   ├── components/          # UI components and charts
+│   │   └── lib/                 # API client, utilities
 │   └── package.json
-└── .github/
-    └── workflows/
-        └── deploy.yml          # Auto-deploy to GitHub Pages
+└── render.yaml
 ```
+
+---
+
+## Running Locally
+
+**Prerequisites:** Python 3.11+, Node.js 18+, npm
+
+```bash
+# Clone
+git clone https://github.com/vedant9527/Arcus-Portfolio-Analysis.git
+cd Arcus-Portfolio-Analysis
+
+# Backend
+pip install -r requirements.txt
+uvicorn backend.main:app --reload --port 8000
+
+# Frontend (new terminal)
+cd "Frontend final"
+npm install
+npm run dev
+```
+
+- Frontend: http://localhost:8080
+- API docs: http://localhost:8000/docs
 
 ---
 
@@ -123,19 +125,19 @@ Arcus/
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `POST` | `/api/portfolio/analyze` | Full portfolio analysis with all metrics |
+| `POST` | `/api/portfolio/analyze` | Full portfolio analysis |
 | `POST` | `/api/portfolio/monte-carlo` | Monte Carlo simulation |
 | `POST` | `/api/portfolio/efficient-frontier` | Efficient frontier computation |
 | `POST` | `/api/portfolio/stress-test` | Historical stress test scenarios |
-| `POST` | `/api/v2/chat` | AI chatbot conversation |
-| `GET` | `/api/news/market` | Live RSS market news feed |
+| `POST` | `/api/v2/chat` | AI chat conversation |
+| `GET` | `/api/news/market` | Live market news feed |
 
 ---
 
 ## Disclaimer
 
-This tool is for educational and demonstration purposes only. It does not constitute financial advice. Always do your own research before making investment decisions.
+Educational and demonstration purposes only. Not financial advice. Do your own research before making investment decisions.
 
 ---
 
-**Built by [Sai Shreyas Vyamajala](https://github.com/shreyas1504)**
+Built by [Vedant Chawardol](https://vedantchawardolportfolio.netlify.app) · [arcus-insights.com](https://arcus-insights.com)
